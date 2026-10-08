@@ -829,6 +829,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const debugSpinner = document.getElementById("debugSpinner");
   const btnText = document.getElementById("btnText");
 
+  // Dynamic API Base URL (if backend is deployed separately)
+  const API_BASE = window.BACKEND_API_URL || (window.location.origin.includes("localhost") ? "" : "");
+
   // Trackers
   const stepObserve = document.getElementById("step-observe");
   const stepThink = document.getElementById("step-think");
@@ -852,7 +855,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2. Fetch sample buggy files
   async function loadSampleFiles() {
     try {
-      const res = await fetch("/api/files");
+      const res = await fetch(`${API_BASE}/api/files`);
       const data = await res.json();
       sampleFiles = data.files || [];
       sampleSelect.innerHTML = `<option value="">-- Choose Buggy File --</option>`;
@@ -898,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4. Load memory lessons
   async function loadMemoryLessons() {
     try {
-      const res = await fetch("/api/memory");
+      const res = await fetch(`${API_BASE}/api/memory`);
       const data = await res.json();
       const lessons = data.lessons || [];
       memoryCount.textContent = lessons.length;
@@ -1027,7 +1030,7 @@ document.addEventListener("DOMContentLoaded", () => {
     appendTerminal(`Triggered agent session for ${fileName}...`, "info");
 
     try {
-      const response = await fetch("/api/debug-stream", {
+      const response = await fetch(`${API_BASE}/api/debug-stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
