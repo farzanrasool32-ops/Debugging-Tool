@@ -17,8 +17,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const debugSpinner = document.getElementById("debugSpinner");
   const btnText = document.getElementById("btnText");
 
-  // Determine API base url (if backend is deployed separately)
-  const API_BASE = window.BACKEND_API_URL || "";
+  // Dynamic API Base URL resolver:
+  // If running locally (localhost, 127.0.0.1, or file://), always connect to local Node server http://localhost:3001.
+  function getApiBase() {
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.protocol === "file:";
+
+    if (isLocal) {
+      return "http://localhost:3001";
+    }
+
+    return window.BACKEND_API_URL || "https://debugging-tool-backend.vercel.app";
+  }
+
+  const API_BASE = getApiBase();
 
   // Trackers
   const stepObserve = document.getElementById("step-observe");
