@@ -6,7 +6,7 @@ import { askGemini } from "./llm";
 import { loadMemory, addLesson } from "./memory";
 
 const PORT = 3000;
-const PUBLIC_DIR = path.resolve(__dirname, "../public");
+const PUBLIC_DIR = path.resolve(__dirname, "../../frontend");
 const BUGGY_DIR = path.resolve(__dirname, "../buggy");
 
 function extractCodeBlock(response: string): string | null {

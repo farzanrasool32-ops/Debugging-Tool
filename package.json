@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node -r ./node_modules/tsx/dist/loader.mjs src/index.ts",
-    "ui": "node -r ./node_modules/tsx/dist/loader.mjs src/server.ts",
+    "start": "node -r ./node_modules/tsx/dist/loader.mjs backend/src/index.ts",
+    "ui": "node -r ./node_modules/tsx/dist/loader.mjs backend/src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
