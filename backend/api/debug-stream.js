@@ -1,66 +1,35 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import * as vm from "vm";
+const vm = require("vm");
+const path = require("path");
+const dotenv = require("dotenv");
+const { askGemini } = require("../src/llm");
+const { addLesson } = require("../src/memory");
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config();
 
 const MAX_ITERATIONS = 5;
 
-// Direct Gemini call in serverless environment
-async function askGemini(prompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
-
-  if (!apiKey || apiKey.trim() === "") {
-    throw new Error("Missing GEMINI_API_KEY in environment variables.");
-  }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model
-  )}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    let msg = `Gemini API error (${response.status})`;
-    try {
-      const parsed = JSON.parse(errorText);
-      if (parsed.error?.message) msg = parsed.error.message;
-    } catch {}
-    throw new Error(msg);
-  }
-
-  const data = (await response.json()) as any;
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Empty response from Gemini API.");
-  return text.trim();
-}
-
-function extractCodeBlock(response: string): string | null {
+function extractCodeBlock(response) {
   const match = response.match(/```(?:javascript|js)?\r?\n([\s\S]*?)```/i);
   return match && match[1] ? match[1].trim() : null;
 }
 
 // Safely execute JavaScript in an isolated VM sandbox
-function runInSandbox(code: string): { stdout: string; stderr: string; exitCode: number } {
-  let stdoutLogs: string[] = [];
-  let stderrLogs: string[] = [];
+function runInSandbox(code) {
+  let stdoutLogs = [];
+  let stderrLogs = [];
 
   const sandboxContext = {
     console: {
-      log: (...args: any[]) => stdoutLogs.push(args.map(String).join(" ")),
-      error: (...args: any[]) => stderrLogs.push(args.map(String).join(" ")),
-      warn: (...args: any[]) => stderrLogs.push(args.map(String).join(" ")),
-      info: (...args: any[]) => stdoutLogs.push(args.map(String).join(" ")),
+      log: (...args) => stdoutLogs.push(args.map(String).join(" ")),
+      error: (...args) => stderrLogs.push(args.map(String).join(" ")),
+      warn: (...args) => stderrLogs.push(args.map(String).join(" ")),
+      info: (...args) => stdoutLogs.push(args.map(String).join(" ")),
     },
     setTimeout,
     clearTimeout,
     process: {
-      exit: (code: number = 0) => {
+      exit: (code = 0) => {
         if (code !== 0) throw new Error(`Process exited with status ${code}`);
       },
     },
@@ -75,7 +44,7 @@ function runInSandbox(code: string): { stdout: string; stderr: string; exitCode:
       stderr: stderrLogs.join("\n"),
       exitCode: 0,
     };
-  } catch (err: any) {
+  } catch (err) {
     return {
       stdout: stdoutLogs.join("\n"),
       stderr: err.stack || err.message || String(err),
@@ -84,32 +53,44 @@ function runInSandbox(code: string): { stdout: string; stderr: string; exitCode:
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
-    return res.status(204).end();
+    return res.status ? res.status(204).end() : (res.statusCode = 204, res.end());
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    if (res.status) {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+    res.writeHead(405, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ error: "Method not allowed" }));
   }
 
   const { code, fileName } = req.body || {};
 
   if (!code || typeof code !== "string") {
-    return res.status(400).json({ error: "Missing code in request body." });
+    if (res.status) {
+      return res.status(400).json({ error: "Missing code in request body." });
+    }
+    res.writeHead(400, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ error: "Missing code in request body." }));
   }
 
   // Setup Server-Sent Events (SSE)
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    "Connection": "keep-alive",
+    "Access-Control-Allow-Origin": "*",
+  });
 
-  const sendEvent = (type: string, payload: any) => {
+  const sendEvent = (type, payload) => {
     res.write(`event: ${type}\ndata: ${JSON.stringify(payload)}\n\n`);
+    if (res.flush) res.flush();
   };
 
   sendEvent("status", { message: `Started debugging session for ${fileName || "script.js"}` });
@@ -158,8 +139,11 @@ Do not write multiple lines or markdown bullets, just the single lesson sentence
         try {
           const lesson = await askGemini(lessonPrompt);
           const cleanLesson = lesson.replace(/^[-*•]\s*/, "").split("\n")[0].trim();
+          addLesson(cleanLesson);
           sendEvent("lesson_added", { lesson: cleanLesson });
-        } catch {}
+        } catch (e) {
+          console.warn("Could not save lesson:", e.message);
+        }
       }
 
       break;
@@ -191,7 +175,7 @@ Do not omit any part of the code.`;
     let llmResponse = "";
     try {
       llmResponse = await askGemini(prompt);
-    } catch (err: any) {
+    } catch (err) {
       sendEvent("error", { message: err.message });
       break;
     }
@@ -226,3 +210,6 @@ Do not omit any part of the code.`;
   sendEvent("done", { isFixed });
   res.end();
 }
+
+module.exports = handler;
+module.exports.default = handler;

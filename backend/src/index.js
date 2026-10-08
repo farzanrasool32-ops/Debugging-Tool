@@ -1,15 +1,15 @@
-import * as path from "path";
-import * as fs from "fs";
-import { readFile, writeFile, runCode } from "./tools";
-import { askGemini } from "./llm";
-import { loadMemory, addLesson } from "./memory";
+const path = require("path");
+const fs = require("fs");
+const { readFile, writeFile, runCode } = require("./tools");
+const { askGemini } = require("./llm");
+const { loadMemory, addLesson } = require("./memory");
 
 const MAX_ITERATIONS = 5;
 
 /**
- * Extracts the JavaScript code from an LLM response containing a markdown code block.
+ * Extracts JavaScript code from LLM response containing a markdown code block.
  */
-function extractCodeBlock(response: string): string | null {
+function extractCodeBlock(response) {
   const match = response.match(/```(?:javascript|js)?\r?\n([\s\S]*?)```/i);
   if (match && match[1]) {
     return match[1].trim();
@@ -23,7 +23,7 @@ async function main() {
   const fileArgs = rawArgs.filter((arg) => arg !== "--verbose");
 
   if (fileArgs.length === 0) {
-    console.error("Usage: npx tsx src/index.ts [--verbose] <path-to-buggy-js-file>");
+    console.error("Usage: node src/index.js [--verbose] <path-to-buggy-js-file>");
     process.exit(1);
   }
 
@@ -35,7 +35,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Backup original file on first iteration
+  // Backup original file on first run
   const backupPath = `${targetFilePath}.bak`;
   if (!fs.existsSync(backupPath)) {
     fs.copyFileSync(targetFilePath, backupPath);
@@ -88,7 +88,7 @@ Do not write multiple lines or markdown bullets, just the single lesson sentence
           const cleanLesson = lessonText.replace(/^[-*•]\s*/, "").split("\n")[0].trim();
           addLesson(cleanLesson);
           console.log(`Saved lesson to memory.md: "${cleanLesson}"`);
-        } catch (err: any) {
+        } catch (err) {
           console.warn("Could not save lesson:", err.message || err);
         }
       }
@@ -149,7 +149,14 @@ Do not omit any part of the code.`;
   process.exit(1);
 }
 
-main().catch((err) => {
-  console.error("Unexpected error in agent loop:", err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error("Unexpected error in agent loop:", err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  extractCodeBlock,
+  main,
+};

@@ -1,11 +1,12 @@
 {
   "name": "debugging-tool",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Autonomous Code Debugging Agent & Web UI",
+  "main": "backend/src/index.js",
   "scripts": {
-    "start": "node -r ./node_modules/tsx/dist/loader.mjs backend/src/index.ts",
-    "ui": "node -r ./node_modules/tsx/dist/loader.mjs backend/src/server.ts",
+    "start": "node backend/src/index.js",
+    "server": "node backend/server.js",
+    "backend": "node backend/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,12 +14,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@types/node": "^26.6.4",
-    "dotenv": "^18.0.6",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
-  },
-  "devDependencies": {
-    "@vercel/node": "^23.0.0"
+    "dotenv": "^18.0.6"
   }
 }

@@ -12,8 +12,10 @@
     rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script>
-    // Live Backend Service URL
-    window.BACKEND_API_URL = "https://debugging-tool-backend.vercel.app";
+    // Live Backend Service URL (defaults to local Node.js server http://localhost:3001 if running locally or customizable)
+    window.BACKEND_API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+      ? "http://localhost:3001"
+      : "";
   </script>
 </head>
 

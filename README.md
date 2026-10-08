@@ -43,27 +43,27 @@ GEMINI_MODEL=gemini-3.5-flash-lite
 Run the agent on any buggy JavaScript file:
 
 ```bash
-npx tsx src/index.ts <path-to-buggy-js-file>
+node backend/src/index.js <path-to-buggy-js-file>
 ```
 
 For detailed logging (including memory state and the full prompt sent to the LLM), supply the `--verbose` flag:
 
 ```bash
-npx tsx src/index.ts --verbose <path-to-buggy-js-file>
+node backend/src/index.js --verbose <path-to-buggy-js-file>
 ```
 
 ### Examples
-Test with the built-in sample files in `buggy/`:
+Test with the built-in sample files in `backend/buggy/`:
 
 ```bash
 # Off-by-one and undefined property bug
-npx tsx src/index.ts buggy/example.js
+node backend/src/index.js backend/buggy/example.js
 
 # Missing parenthesis syntax error
-npx tsx src/index.ts buggy/syntax_error.js
+node backend/src/index.js backend/buggy/syntax_error.js
 
 # Undefined scope reference error
-npx tsx src/index.ts buggy/undefined_var.js
+node backend/src/index.js backend/buggy/undefined_var.js
 ```
 
 ---
@@ -83,10 +83,10 @@ The agent uses `memory.md` to store lessons learned from previous fixes:
 You can also run the agent using a real-time web dashboard:
 
 ```bash
-npm run ui
+npm run server
 ```
 
-Then open **[http://localhost:3000](http://localhost:3000)** in your browser.
+Then open the frontend (e.g. `frontend/index.html` in browser or Live Server). The backend runs at **[http://localhost:3001](http://localhost:3001)**.
 
 ### Web UI Features:
 - **Interactive Code Workspace:** Select built-in buggy presets or paste your own code directly.

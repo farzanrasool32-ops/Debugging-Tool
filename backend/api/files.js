@@ -1,12 +1,13 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+const fs = require("fs");
+const path = require("path");
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
-    return res.status(204).end();
+    return res.status ? res.status(204).end() : (res.statusCode = 204, res.end());
   }
 
   // Pre-configured realistic testing applications
@@ -161,5 +162,13 @@ console.log("Converted Total with Fee: PKR " + payment);
     },
   ];
 
-  return res.status(200).json({ files: sampleFiles });
+  const payload = { files: sampleFiles };
+  if (res.json) {
+    return res.status(200).json(payload);
+  }
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(payload));
 }
+
+module.exports = handler;
+module.exports.default = handler;

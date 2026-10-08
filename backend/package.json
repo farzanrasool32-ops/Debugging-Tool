@@ -2,15 +2,14 @@
   "name": "debugging-tool-backend",
   "version": "1.0.0",
   "description": "Backend AI reasoning service for debug-agent",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node -r tsx src/index.ts"
+    "start": "node src/index.js",
+    "server": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
-    "@types/node": "^26.6.4",
-    "dotenv": "^18.0.6",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "dotenv": "^18.0.6"
   },
   "devDependencies": {
     "@vercel/node": "^23.0.0"

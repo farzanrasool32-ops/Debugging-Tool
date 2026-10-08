@@ -1,39 +1,32 @@
-import * as fs from "fs";
-import { spawnSync } from "child_process";
-
-export interface RunResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-  timedOut: boolean;
-}
+const fs = require("fs");
+const { spawnSync } = require("child_process");
 
 /**
  * Reads and returns the content of the file at the given path.
  */
-export function readFile(path: string): string {
-  return fs.readFileSync(path, "utf-8");
+function readFile(filePath) {
+  return fs.readFileSync(filePath, "utf-8");
 }
 
 /**
  * Writes the given content to the file at the specified path.
  */
-export function writeFile(path: string, content: string): void {
-  fs.writeFileSync(path, content, "utf-8");
+function writeFile(filePath, content) {
+  fs.writeFileSync(filePath, content, "utf-8");
 }
 
 /**
  * Runs a JavaScript file using Node.js with a 5-second timeout.
  * Returns stdout, stderr, exitCode, and timedOut flag.
  */
-export function runCode(path: string): RunResult {
-  const result = spawnSync("node", [path], {
+function runCode(filePath) {
+  const result = spawnSync("node", [filePath], {
     timeout: 5000,
     encoding: "utf-8",
   });
 
   const timedOut = Boolean(
-    result.error && (result.error as NodeJS.ErrnoException).code === "ETIMEDOUT"
+    result.error && result.error.code === "ETIMEDOUT"
   );
 
   const stdout = result.stdout || "";
@@ -54,3 +47,9 @@ export function runCode(path: string): RunResult {
     timedOut,
   };
 }
+
+module.exports = {
+  readFile,
+  writeFile,
+  runCode,
+};
