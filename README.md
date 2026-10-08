@@ -1,6 +1,10 @@
 # debug-agent
 
-An autonomous AI debugging CLI tool built with Node.js, TypeScript, and Gemini API.
+An autonomous AI debugging CLI tool and Web UI built with Node.js and Gemini API.
+
+### 🌐 Live Deployments
+- **Frontend Web UI**: [https://debugging-tool-frontend.vercel.app](https://debugging-tool-frontend.vercel.app/)
+- **Backend API Service**: [https://debugging-tool-backend.vercel.app](https://debugging-tool-backend.vercel.app/)
 
 It takes a buggy JavaScript file, executes it, captures errors, consults the Gemini model for root cause analysis and a fix, writes the fix, and iteratively validates until the file runs cleanly (or reaches the maximum limit of 5 attempts). After each successful fix, it records general lessons in `memory.md` so that future runs do not repeat past mistakes.
 
