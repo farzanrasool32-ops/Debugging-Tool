@@ -9,11 +9,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(204).end();
   }
 
-  // Pre-configured realistic sample applications for live demo
+  // Pre-configured realistic testing applications
   const sampleFiles = [
     {
-      name: "ecommerce_cart.js (E-Commerce Store)",
-      content: `// Example 1: E-Commerce Cart Total Calculator
+      name: "ecommerce_cart.js (🛒 E-Commerce Cart)",
+      content: `// Testing App 1: E-Commerce Cart Total Calculator
 // Bug: TypeError due to incorrect property access on cart items and missing price validation
 
 const cart = [
@@ -40,8 +40,8 @@ console.log("Cart Grand Total: $" + total);
 `,
     },
     {
-      name: "auth_service.js (User Token Auth)",
-      content: `// Example 2: User Authentication & JWT-like Token Parser
+      name: "auth_service.js (🔐 User Token Auth)",
+      content: `// Testing App 2: User Authentication & JWT-like Token Parser
 // Bug: Missing argument handling and JSON parsing unhandled syntax error
 
 function parseUserSession(rawCookie) {
@@ -65,8 +65,8 @@ console.log(parseUserSession(cookieString));
 `,
     },
     {
-      name: "weather_analytics.js (Weather API Aggregator)",
-      content: `// Example 3: Weather Data Analytics & Temperature Aggregator
+      name: "weather_analytics.js (⛅ Weather Sensor Analytics)",
+      content: `// Testing App 3: Weather Data Analytics & Temperature Aggregator
 // Bug: ReferenceError calling undefined function and NaN calculation
 
 const weeklyForecast = [
@@ -97,13 +97,66 @@ console.log("Weekly Average Temperature: " + avg + "°C");
 `,
     },
     {
-      name: "example.js (Basic Array Loop)",
-      content: `const items = [1, 2, 3];
-let total = 0;
-for (let i = 0; i <= items.length; i++) {
-  total += items[i].value;
+      name: "pagination_helper.js (📄 Database Pagination Slicer)",
+      content: `// Testing App 4: REST API Pagination & Cursor Slicer
+// Bugs: Off-by-one slice and accessing .id on undefined index
+
+const databaseRecords = [
+  { id: 101, title: "Getting Started with AI", views: 1420 },
+  { id: 102, title: "Node.js Concurrency Guide", views: 980 },
+  { id: 103, title: "Mastering TypeScript Generics", views: 2310 },
+  { id: 104, title: "Vercel Serverless Architecture", views: 1850 },
+  { id: 105, title: "Building Autonomous Agents", views: 3200 }
+];
+
+function paginateResults(records, page, pageSize) {
+  const startIndex = page * pageSize; 
+  const endIndex = startIndex + pageSize;
+  const pageItems = records.slice(startIndex, endIndex);
+
+  // Bug: Accessing .id on pageItems[pageItems.length] (out of bounds)
+  const nextCursor = pageItems[pageItems.length].id;
+
+  return {
+    page,
+    itemsCount: pageItems.length,
+    nextCursor,
+    data: pageItems
+  };
 }
-console.log(total);
+
+const page1 = paginateResults(databaseRecords, 1, 3);
+console.log("Pagination Result:", JSON.stringify(page1));
+`,
+    },
+    {
+      name: "currency_converter.js (💳 Financial Payment Converter)",
+      content: `// Testing App 5: Financial Currency Converter & Fee Calculator
+// Bugs: Accessing properties of undefined conversion rates and null fee calculation
+
+const exchangeRates = {
+  USD: 1.0,
+  EUR: 0.92,
+  GBP: 0.79,
+  PKR: 278.50
+};
+
+function convertCurrency(amount, fromCurrency, toCurrency) {
+  const fromRate = exchangeRates[fromCurrency.toUpperCase()];
+  const toRate = exchangeRates[toCurrency.toUpperCase()];
+
+  const amountInUSD = amount / fromRate;
+  const convertedAmount = amountInUSD * toRate;
+
+  // Bug: Accessing flatFee on undefined transactionConfig
+  let transactionConfig;
+  const finalCharge = convertedAmount + transactionConfig.flatFee;
+
+  return finalCharge.toFixed(2);
+}
+
+const payment = convertCurrency(50, "usd", "pkr");
+console.log("Converted Total with Fee: PKR " + payment);
 `,
     },
   ];
