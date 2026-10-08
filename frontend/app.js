@@ -17,8 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const debugSpinner = document.getElementById("debugSpinner");
   const btnText = document.getElementById("btnText");
 
-  // Dynamic API Base URL (if backend is deployed separately)
-  const API_BASE = window.BACKEND_API_URL || (window.location.origin.includes("localhost") ? "" : "");
+  // Determine API base url (if backend is deployed separately)
+  const API_BASE = window.BACKEND_API_URL || "";
 
   // Trackers
   const stepObserve = document.getElementById("step-observe");

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 
-const MEMORY_FILE = path.resolve(process.cwd(), "memory.md");
+const MEMORY_FILE = path.resolve(__dirname, "../memory.md");
 const TITLE = "# Agent Memory\n";
 const MAX_LESSONS = 20;
 
@@ -25,7 +25,6 @@ export function addLesson(text: string, filePath: string = MEMORY_FILE): void {
   const currentContent = loadMemory(filePath);
 
   const lines = currentContent.split(/\r?\n/);
-  // Collect existing lesson bullets
   const lessons: string[] = [];
   const nonLessonLines: string[] = [];
 
@@ -41,10 +40,7 @@ export function addLesson(text: string, filePath: string = MEMORY_FILE): void {
   const newLesson = `- ${today}: ${text.trim()}`;
   lessons.push(newLesson);
 
-  // Keep only the last MAX_LESSONS
   const keptLessons = lessons.slice(-MAX_LESSONS);
-
-  // Construct new content preserving header
   const header = nonLessonLines.length > 0 ? nonLessonLines.join("\n") + "\n\n" : TITLE + "\n";
   const updatedContent = header + keptLessons.join("\n") + "\n";
 

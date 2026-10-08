@@ -1,14 +1,16 @@
 import dotenv from "dotenv";
+import * as path from "path";
 
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 dotenv.config();
 
 /**
  * Sends a prompt to the Gemini API and returns the generated text.
- * Handles missing API key, HTTP errors, and empty responses cleanly without stack traces.
+ * Handles missing API key, transient 503 high-demand retries, and clean error output.
  */
 export async function askGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 
   if (!apiKey || apiKey.trim() === "") {
     console.error("Error: Missing GEMINI_API_KEY in .env file.");
@@ -50,7 +52,7 @@ export async function askGemini(prompt: string): Promise<string> {
           }
         }
 
-        // Retry on 503 high demand
+        // Retry on transient 503 high-demand spike
         if (response.status === 503 && attempt < maxRetries) {
           console.warn(`Gemini 503 high demand. Retrying in ${attempt * 2}s...`);
           await new Promise((resolve) => setTimeout(resolve, attempt * 2000));

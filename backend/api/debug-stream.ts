@@ -3,13 +3,13 @@ import * as vm from "vm";
 
 const MAX_ITERATIONS = 5;
 
-// Direct Gemini call compatible with Vercel serverless environment
+// Direct Gemini call in serverless environment
 async function askGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 
   if (!apiKey || apiKey.trim() === "") {
-    throw new Error("Missing GEMINI_API_KEY environment variable in Vercel.");
+    throw new Error("Missing GEMINI_API_KEY in environment variables.");
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
@@ -45,7 +45,7 @@ function extractCodeBlock(response: string): string | null {
   return match && match[1] ? match[1].trim() : null;
 }
 
-// Safely execute JS snippet in a sandbox inside serverless environment
+// Safely execute JavaScript in an isolated VM sandbox
 function runInSandbox(code: string): { stdout: string; stderr: string; exitCode: number } {
   let stdoutLogs: string[] = [];
   let stderrLogs: string[] = [];
@@ -103,7 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Missing code in request body." });
   }
 
-  // Set headers for Server-Sent Events (SSE)
+  // Setup Server-Sent Events (SSE)
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -136,7 +136,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: "Execution succeeded with exit code 0!",
       });
 
-      // Learn lesson if we fixed something
+      // Learn lesson if we made fixes
       if (iteration > 1) {
         sendEvent("step", { step: "learn", message: "Synthesizing lesson for memory..." });
         const lessonPrompt = `You are a software engineering mentor.

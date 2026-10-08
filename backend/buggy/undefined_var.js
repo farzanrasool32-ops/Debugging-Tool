@@ -1,4 +1,4 @@
-function calculateDiscount(price, discountRate = 0.1) {
+function calculateDiscount(price) {
   return price - discountRate * price;
 }
 

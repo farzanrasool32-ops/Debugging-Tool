@@ -29,13 +29,13 @@ async function main() {
 
   const targetFilePath = path.resolve(fileArgs[0]);
 
-  // Target file missing: clear message
+  // Target file missing check
   if (!fs.existsSync(targetFilePath)) {
     console.error(`Error: File not found at ${targetFilePath}`);
     process.exit(1);
   }
 
-  // Backup original file on first run if not already backed up
+  // Backup original file on first iteration
   const backupPath = `${targetFilePath}.bak`;
   if (!fs.existsSync(backupPath)) {
     fs.copyFileSync(targetFilePath, backupPath);
@@ -57,7 +57,7 @@ async function main() {
         console.log(`Program output:\n${runResult.stdout.trim()}`);
       }
 
-      // If it took fixes (iteration > 1), learn from the fix
+      // If fixes were applied, synthesize and save lesson
       if (iteration > 1) {
         console.log("\nLearning lesson from fix...");
         const originalBuggyCode = readFile(backupPath);
@@ -127,7 +127,7 @@ Do not omit any part of the code.`;
     let llmResponse = await askGemini(prompt);
     console.log(`Explanation:\n${llmResponse.split("```")[0].trim()}`);
 
-    // ACT: extract code block, with 1 retry if missing
+    // ACT (with retry if code block missing)
     let fixedCode = extractCodeBlock(llmResponse);
     if (!fixedCode) {
       console.warn("Warning: No markdown code block in Gemini response. Retrying once...");
@@ -144,7 +144,6 @@ Do not omit any part of the code.`;
     writeFile(targetFilePath, fixedCode + "\n");
   }
 
-  // Max 5 iterations reached: print what failed and the last error
   console.error(`\nFailed to fix file after ${MAX_ITERATIONS} attempts.`);
   console.error(`Last observed error:\n${lastObservedError}`);
   process.exit(1);

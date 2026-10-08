@@ -4,8 +4,7 @@
   "description": "Backend AI reasoning service for debug-agent",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node -r ./node_modules/tsx/dist/loader.mjs src/index.ts",
-    "server": "node -r ./node_modules/tsx/dist/loader.mjs src/server.ts"
+    "start": "node -r tsx src/index.ts"
   },
   "dependencies": {
     "@types/node": "^26.6.4",

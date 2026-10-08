@@ -5,12 +5,13 @@ import * as path from "path";
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
 
-  const memoryPath = path.resolve(process.cwd(), "memory.md");
+  const memoryPath = path.resolve(__dirname, "../memory.md");
   let content = "# Agent Memory\n";
 
   if (fs.existsSync(memoryPath)) {
