@@ -11,6 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="env-config.js"></script>
   <script>
     // Live Backend Service URL: Production deployed backend with local development fallback
     const isLocal =
@@ -18,9 +19,15 @@
       window.location.hostname === "127.0.0.1" ||
       window.location.protocol === "file:";
 
-    window.BACKEND_API_URL = isLocal
+    // Default fallback if not defined in .env
+    const defaultApiUrl = isLocal
       ? "http://localhost:3001"
       : "https://debugging-tool-0987.vercel.app";
+
+    window.BACKEND_API_URL =
+      (window.__ENV__ && (window.__ENV__.BACKEND_API_URL || window.__ENV__.VITE_BACKEND_API_URL)) ||
+      window.BACKEND_API_URL ||
+      defaultApiUrl;
 
     window.FRONTEND_DEPLOY_URL = "https://debugging-tool-0987.vercel.app/";
   </script>
@@ -117,7 +124,7 @@ https://debugging-tool-0987.vercel.app" target="_blank" rel="noopener noreferrer
 
         <div class="editor-container">
           <div class="editor-toolbar">
-            <span class="editor-file-name" id="currentFileName">buggy/example.js</span>
+            <span class="editor-file-name" id="currentFileName">custom_input.js</span>
             <div class="editor-actions">
               <button class="btn btn-ghost" id="btnResetCode" title="Reset to original preset code">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

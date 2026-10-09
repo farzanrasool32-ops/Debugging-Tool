@@ -18,8 +18,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnText = document.getElementById("btnText");
 
   // Dynamic API Base URL resolver:
-  // If running locally (localhost, 127.0.0.1, or file://), always connect to local Node server http://localhost:3001.
+  // Prioritizes .env configuration (via window.__ENV__ or window.BACKEND_API_URL)
   function getApiBase() {
+    if (window.__ENV__ && window.__ENV__.BACKEND_API_URL) {
+      return window.__ENV__.BACKEND_API_URL.replace(/\/+$/, "");
+    }
+    if (window.__ENV__ && window.__ENV__.VITE_BACKEND_API_URL) {
+      return window.__ENV__.VITE_BACKEND_API_URL.replace(/\/+$/, "");
+    }
+    if (window.BACKEND_API_URL) {
+      return window.BACKEND_API_URL.replace(/\/+$/, "");
+    }
+
     const isLocal =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1" ||
@@ -29,10 +39,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return "http://localhost:3001";
     }
 
-    return window.BACKEND_API_URL || "https://debugging-tool-0987.vercel.app";
+    return "https://debugging-tool-0987.vercel.app";
   }
 
-  const API_BASE = getApiBase();
+  function getActiveApiBase() {
+    return getApiBase();
+  }
 
   // Trackers
   const stepObserve = document.getElementById("step-observe");
@@ -222,7 +234,7 @@ console.log(total);
     renderSampleDropdown();
 
     try {
-      const res = await fetch(`${API_BASE}/api/files`);
+      const res = await fetch(`${getActiveApiBase()}/api/files`);
       if (res.ok) {
         const data = await res.json();
         if (data.files && data.files.length > 0) {
@@ -243,14 +255,6 @@ console.log(total);
       opt.textContent = file.name;
       sampleSelect.appendChild(opt);
     });
-
-    const defaultFile = sampleFiles[0];
-    if (defaultFile && !codeEditor.value.trim()) {
-      sampleSelect.value = defaultFile.name;
-      codeEditor.value = defaultFile.content;
-      currentFileName.textContent = defaultFile.name.split(" ")[0];
-      originalPresetCode = defaultFile.content;
-    }
   }
 
   // 3. Preset selector change
@@ -261,21 +265,35 @@ console.log(total);
       originalPresetCode = selected.content;
       currentFileName.textContent = `buggy/${selected.name}`;
       appendTerminal(`Loaded preset file buggy/${selected.name}`, "info");
+    } else {
+      currentFileName.textContent = "custom_input.js";
+    }
+  });
+
+  // Track manual typing in editor
+  codeEditor.addEventListener("input", () => {
+    if (!sampleSelect.value) {
+      currentFileName.textContent = "custom_input.js";
     }
   });
 
   // Reset button
   btnResetCode.addEventListener("click", () => {
-    if (originalPresetCode) {
+    if (originalPresetCode && sampleSelect.value) {
       codeEditor.value = originalPresetCode;
       appendTerminal("Reset code editor to preset code.", "system");
+    } else {
+      codeEditor.value = "";
+      sampleSelect.value = "";
+      currentFileName.textContent = "custom_input.js";
+      appendTerminal("Cleared code editor.", "system");
     }
   });
 
   // 4. Load memory lessons
   async function loadMemoryLessons() {
     try {
-      const res = await fetch(`${API_BASE}/api/memory`);
+      const res = await fetch(`${getActiveApiBase()}/api/memory`);
       const data = await res.json();
       const lessons = data.lessons || [];
       memoryCount.textContent = lessons.length;
@@ -404,7 +422,7 @@ console.log(total);
     appendTerminal(`Triggered agent session for ${fileName}...`, "info");
 
     try {
-      const response = await fetch(`${API_BASE}/api/debug-stream`, {
+      const response = await fetch(`${getActiveApiBase()}/api/debug-stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -535,7 +553,16 @@ console.log(total);
     }
   }
 
-  // Initial loads
-  loadSampleFiles();
-  loadMemoryLessons();
+  // Initial loads (wait for env config if loading asynchronously)
+  async function init() {
+    if (window.__ENV_PROMISE__) {
+      try {
+        await window.__ENV_PROMISE__;
+      } catch (_) {}
+    }
+    loadSampleFiles();
+    loadMemoryLessons();
+  }
+
+  init();
 });

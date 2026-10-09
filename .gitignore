@@ -4,3 +4,5 @@ node_modules
 dist_temp
 backend/.env
 backend/.vercel
+frontend/.env
+frontend/.env.local
