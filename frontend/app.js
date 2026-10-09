@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return "http://localhost:3001";
     }
 
-    return window.BACKEND_API_URL || "https://debugging-tool-frontend.vercel.app";
+    return window.BACKEND_API_URL || "https://debugging-tool-0987.vercel.app";
   }
 
   const API_BASE = getApiBase();
